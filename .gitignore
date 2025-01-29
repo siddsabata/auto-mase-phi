@@ -1,0 +1,83 @@
+# Dependencies
+node_modules/
+/vendor/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage/
+
+# Production build
+/build/
+/dist/
+/out/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IDE - JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# IDE - Eclipse
+.project
+.classpath
+.settings/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Operating System
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# TypeScript
+*.tsbuildinfo
+
+# Python
+.venv/
+venv/
+ENV/
+*.pyc
+__pycache__/
+.Python
+pip-log.txt
+
+# ... existing code ... 

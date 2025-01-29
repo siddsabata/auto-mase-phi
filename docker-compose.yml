@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  preprocess:
+    build: 
+      context: ./0_preprocess
+      dockerfile: Dockerfile
+    volumes:
+      - ${DATA_DIR}:/data
+    command: "${PATIENT_ID} ${NUM_BOOTSTRAPS:-5}"
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+
+  phylowgs:
+    build:
+      context: ./1_phylowgs
+      dockerfile: Dockerfile
+    volumes:
+      - ${DATA_DIR}:/data
+    command: "${PATIENT_ID} ${NUM_CHAINS:-5} ${NUM_BOOTSTRAPS:-5}"
+    depends_on:
+      preprocess:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 16G
+
+  aggregation:
+    build:
+      context: ./2_aggregation
+      dockerfile: Dockerfile
+    volumes:
+      - ${DATA_DIR}:/data
+    command: "${PATIENT_ID} ${NUM_BOOTSTRAPS:-5}"
+    depends_on:
+      phylowgs:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 8G
+
+  markers:
+    build:
+      context: ./3_markers
+      dockerfile: Dockerfile
+    volumes:
+      - ${DATA_DIR}:/data
+    command: "${PATIENT_ID} ${NUM_BOOTSTRAPS:-5}"
+    depends_on:
+      aggregation:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 8G
+
+volumes:
+  vis_mase_phi_data:
