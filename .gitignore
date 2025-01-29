@@ -80,4 +80,10 @@ __pycache__/
 .Python
 pip-log.txt
 
+# Singularity
+*.sif
+*.simg
+singularity/*.sif
+singularity/*.simg
+
 # ... existing code ... 

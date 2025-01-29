@@ -41,7 +41,7 @@ mark_step_completed() {
 # Function to run a step
 run_step() {
     local step=$1
-    local image="mase_phi_app-${step}.sif"
+    local image="singularity/mase_phi_app-${step}.sif"
     
     if check_step_completed "$step"; then
         echo "Step $step already completed for patient $patient_id, skipping..."
