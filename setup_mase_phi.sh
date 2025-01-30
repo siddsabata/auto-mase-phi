@@ -5,9 +5,19 @@ echo "Creating directories..."
 mkdir -p logs
 mkdir -p singularity
 
-# Load a Singularity module (using one of the available modules)
+# Initialize module command and load Singularity
 echo "Loading Singularity module..."
+source /etc/profile.d/modules.sh
+module purge
 module load singularity/gcc-v8.3.0
+
+# Verify singularity is available
+if ! command -v singularity &> /dev/null; then
+    echo "Error: singularity command not found after loading module"
+    echo "Available modules:"
+    module avail singularity
+    exit 1
+fi
 
 echo "Converting Docker images to Singularity..."
 # Pull and convert each image

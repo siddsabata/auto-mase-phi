@@ -4,22 +4,31 @@ services:
   preprocess:
     build: 
       context: ./0_preprocess
-      dockerfile: Dockerfile
+      no_cache: true
     volumes:
       - ${DATA_DIR}:/data
+    environment:
+      - PATIENT_ID=${PATIENT_ID}
     command: "${PATIENT_ID} ${NUM_BOOTSTRAPS:-5}"
     deploy:
       resources:
         limits:
           cpus: '4'
           memory: 8G
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./0_preprocess
+          target: /app
 
   phylowgs:
     build:
       context: ./1_phylowgs
-      dockerfile: Dockerfile
     volumes:
       - ${DATA_DIR}:/data
+    environment:
+      - DATA_DIR=/data
+      - PATIENT_ID=${PATIENT_ID}
     command: "${PATIENT_ID} ${NUM_CHAINS:-5} ${NUM_BOOTSTRAPS:-5}"
     depends_on:
       preprocess:
@@ -33,9 +42,10 @@ services:
   aggregation:
     build:
       context: ./2_aggregation
-      dockerfile: Dockerfile
     volumes:
       - ${DATA_DIR}:/data
+    environment:
+      - PATIENT_ID=${PATIENT_ID}
     command: "${PATIENT_ID} ${NUM_BOOTSTRAPS:-5}"
     depends_on:
       phylowgs:
@@ -49,9 +59,10 @@ services:
   markers:
     build:
       context: ./3_markers
-      dockerfile: Dockerfile
     volumes:
       - ${DATA_DIR}:/data
+    environment:
+      - PATIENT_ID=${PATIENT_ID}
     command: "${PATIENT_ID} ${NUM_BOOTSTRAPS:-5}"
     depends_on:
       aggregation:
@@ -64,3 +75,6 @@ services:
 
 volumes:
   vis_mase_phi_data:
+
+x-config:
+  exit-code-from: preprocess

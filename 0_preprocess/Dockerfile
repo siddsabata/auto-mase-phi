@@ -97,6 +97,9 @@ echo "Preprocessing completed successfully"\n\
 # Make the script executable
 RUN chmod +x /app/run_preprocess.sh
 
+# Ensure Python output isn't buffered
+ENV PYTHONUNBUFFERED=1
+
 # Default command (can be overridden)
 ENTRYPOINT ["/app/run_preprocess.sh"]
 
