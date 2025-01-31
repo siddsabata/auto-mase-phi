@@ -1,12 +1,22 @@
 #!/bin/bash
 set -e
 
+# Initialize the module system
+if [ -f /etc/profile.d/modules.sh ]; then
+    source /etc/profile.d/modules.sh
+elif [ -f /usr/share/Modules/init/bash ]; then
+    source /usr/share/Modules/init/bash
+fi
+
 # Create necessary directories
 echo "Creating directories..."
 mkdir -p logs
 mkdir -p singularity
 
 echo "Loading Singularity module..."
+# First purge any loaded modules to start clean
+module purge
+
 # Try different module versions in order of preference
 SINGULARITY_MODULES=("singularity/gcc-v8.3.0" "singularity/bedtools-v2.29.2" "singularity")
 
