@@ -76,5 +76,5 @@ services:
 volumes:
   vis_mase_phi_data:
 
-x-config:
-  exit-code-from: preprocess
+x-config: &config
+  exit-code-from: phylowgs

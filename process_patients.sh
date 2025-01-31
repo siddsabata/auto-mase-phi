@@ -15,12 +15,18 @@ module load singularity/gcc-v8.3.0  # Using gcc version as it's a basic toolchai
 export DATA_DIR=/path/to/data  # CHANGE THIS to your data directory
 export NUM_BOOTSTRAPS=5
 export NUM_CHAINS=5
+LOG_FILE="logs/processing_log.txt"
 STEPS=("preprocess" "phylowgs" "aggregation" "markers")
+
+# Create logs directory if it doesn't exist
+mkdir -p logs
 
 # Get patient ID from array index
 patients=($(ls ${DATA_DIR} | grep -v "\."))
 patient_id=${patients[$SLURM_ARRAY_TASK_ID]}
 patient_dir="${DATA_DIR}/${patient_id}"
+
+echo "[$(date)] Starting processing for patient $patient_id" | tee -a "$LOG_FILE"
 
 # Function to check if step is completed
 check_step_completed() {
@@ -44,11 +50,11 @@ run_step() {
     local image="singularity/mase_phi_app-${step}.sif"
     
     if check_step_completed "$step"; then
-        echo "Step $step already completed for patient $patient_id, skipping..."
+        echo "[$(date)] Step $step already completed for patient $patient_id, skipping..." | tee -a "$LOG_FILE"
         return 0
     fi
 
-    echo "Running $step for patient $patient_id"
+    echo "[$(date)] Running $step for patient $patient_id" | tee -a "$LOG_FILE"
     
     # Set step-specific parameters
     local cmd_args="${patient_id} ${NUM_BOOTSTRAPS}"
@@ -59,25 +65,29 @@ run_step() {
     # Run the step
     if singularity run --bind ${DATA_DIR}:/data "$image" $cmd_args; then
         mark_step_completed "$step"
+        echo "[$(date)] Successfully completed $step for patient $patient_id" | tee -a "$LOG_FILE"
         return 0
     else
-        echo "Error in $step for patient $patient_id"
-        return 1
+        local exit_code=$?
+        if [ "$step" == "phylowgs" ] && [ $exit_code -eq 1 ]; then
+            echo "[$(date)] PhyloWGS failed for patient $patient_id - likely no viable mutations. Skipping remaining steps." | tee -a "$LOG_FILE"
+            exit 0  # Exit successfully to allow other patients to process
+        else
+            echo "[$(date)] Error in $step for patient $patient_id (exit code: $exit_code)" | tee -a "$LOG_FILE"
+            return 1
+        fi
     fi
 }
-
-# Create logs directory if it doesn't exist
-mkdir -p logs
 
 # Process each step
 for step in "${STEPS[@]}"; do
     if ! run_step "$step"; then
-        echo "Failed at step $step for patient $patient_id"
+        echo "[$(date)] Failed at step $step for patient $patient_id" | tee -a "$LOG_FILE"
         exit 1
     fi
 done
 
-echo "Successfully completed all steps for patient $patient_id"
+echo "[$(date)] Successfully completed all steps for patient $patient_id" | tee -a "$LOG_FILE"
 
 # run with 
 # sbatch process_patients.sh
