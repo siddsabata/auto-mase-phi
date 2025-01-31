@@ -1,21 +1,36 @@
 #!/bin/bash
+set -e
 
 # Create necessary directories
 echo "Creating directories..."
 mkdir -p logs
 mkdir -p singularity
 
-# Initialize module command and load Singularity
 echo "Loading Singularity module..."
-source /etc/profile.d/modules.sh
-module purge
-module load singularity/gcc-v8.3.0
+# Try different module versions in order of preference
+SINGULARITY_MODULES=("singularity/gcc-v8.3.0" "singularity/bedtools-v2.29.2" "singularity")
+
+module_loaded=false
+for module in "${SINGULARITY_MODULES[@]}"; do
+    if module load "$module" 2>/dev/null; then
+        echo "Successfully loaded $module"
+        module_loaded=true
+        break
+    fi
+done
+
+if ! $module_loaded; then
+    echo "Error: Could not load any Singularity module"
+    echo "Available modules:"
+    module avail
+    exit 1
+fi
 
 # Verify singularity is available
 if ! command -v singularity &> /dev/null; then
     echo "Error: singularity command not found after loading module"
     echo "Available modules:"
-    module avail singularity
+    module avail
     exit 1
 fi
 
