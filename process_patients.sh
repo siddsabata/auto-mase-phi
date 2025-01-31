@@ -9,7 +9,7 @@
 #SBATCH --job-name=mase_phi
 
 # Load necessary modules
-module load singularity/gcc-v8.3.0  # Using gcc version as it's a basic toolchain
+module load singularity
 
 # Configuration
 export DATA_DIR=/path/to/data  # CHANGE THIS to your data directory
@@ -63,7 +63,7 @@ run_step() {
     fi
 
     # Run the step
-    if singularity run --bind ${DATA_DIR}:/data "$image" $cmd_args; then
+    if apptainer run --bind ${DATA_DIR}:/data "$image" $cmd_args; then
         mark_step_completed "$step"
         echo "[$(date)] Successfully completed $step for patient $patient_id" | tee -a "$LOG_FILE"
         return 0

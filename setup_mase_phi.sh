@@ -17,20 +17,9 @@ echo "Loading Singularity module..."
 # First purge any loaded modules to start clean
 module purge
 
-# Try different module versions in order of preference
-SINGULARITY_MODULES=("singularity/gcc-v8.3.0" "singularity/bedtools-v2.29.2" "singularity")
-
-module_loaded=false
-for module in "${SINGULARITY_MODULES[@]}"; do
-    if module load "$module" 2>/dev/null; then
-        echo "Successfully loaded $module"
-        module_loaded=true
-        break
-    fi
-done
-
-if ! $module_loaded; then
-    echo "Error: Could not load any Singularity module"
+# Load the singularity module
+if ! module load singularity; then
+    echo "Error: Could not load singularity module"
     echo "Available modules:"
     module avail
     exit 1
@@ -51,7 +40,7 @@ for service in preprocess phylowgs aggregation markers; do
     sif_file="singularity/mase_phi_app-${service}.sif"
     if [ ! -f "$sif_file" ]; then
         # Assuming your Docker images are in a registry. Replace YOUR_REGISTRY with actual registry
-        singularity pull --dir singularity/ sif:mase_phi_app-${service}.sif docker://YOUR_REGISTRY/mase_phi_app-${service}:latest
+        apptainer pull --dir singularity/ sif:mase_phi_app-${service}.sif docker://YOUR_REGISTRY/mase_phi_app-${service}:latest
         if [ $? -ne 0 ]; then
             echo "Error converting ${service} image"
             exit 1
